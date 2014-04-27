@@ -1,4 +1,4 @@
-
+#http://www.yunusgulsen.com/2012/01/check-if-powersehll-module-is-already.html
 Function Load-Module 
 { 
 Param([string]$name) 
@@ -38,15 +38,11 @@ Load-Module -name "sqlps"
 
 $srv  = new-object ("Microsoft.SqlServer.Management.Smo.Server") ".\SQLI03"
 
-#Create a new database
-$db = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -argumentlist $srv, "Test_SMO_Database"
-$db.Create()
 
 #Reference the database and display the date when it was created. 
 $db = $srv.Databases["Test_SMO_Database"]
-$db.CreateDate
 #TODO CreateDatabase function
 #TODO DropDatbase function
 #Drop the database
 
-#$db.Drop()
+$db.Drop()
