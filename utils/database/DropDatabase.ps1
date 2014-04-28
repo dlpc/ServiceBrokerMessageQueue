@@ -23,26 +23,23 @@ if(-not(Get-Module -name $name))
 }
 
 
-# if (-not(Get-mymodule -name "sqlps"))
-# {
-#     Write-Host "Sql Server Powershell Not Available"
-#     Write-Host "Terminating Script"
-#     Exit
-# }
+Function Drop-Database
+{
+    Param($sqlServerInstance,
+        $databaseName)
 
-Load-Module -name "sqlps"
+    Load-Module -name "sqlps"
+    $srv  = new-object ("Microsoft.SqlServer.Management.Smo.Server")$sqlServerInstance.ToString()
+
+    $db = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -argumentlist $srv, $databaseName
+    
+    $db = $srv.Databases[$databaseName]
+    Write-Host "Droping Database"$databaseName "on" $sqlServerInstance
+    $db.Drop()
+}
 
 
-#Import-Module 'C:\program files\microsoft sql server\110\tools\powershell\modules\sqlps' -DisableNameChecking
+$instance = ".\SQLI03"
+$database = "Test_SMO_Database"
 
-
-$srv  = new-object ("Microsoft.SqlServer.Management.Smo.Server") ".\SQLI03"
-
-
-#Reference the database and display the date when it was created. 
-$db = $srv.Databases["Test_SMO_Database"]
-#TODO CreateDatabase function
-#TODO DropDatbase function
-#Drop the database
-
-$db.Drop()
+Drop-Database $instance $database
