@@ -1,6 +1,8 @@
 // include Fake lib
 #r @"packages/FAKE/tools/FakeLib.dll"
+#r "System.Management.Automation"
 open Fake
+open System.Management.Automation
 
 // Properties
 let buildDir = "./build/"
@@ -16,7 +18,15 @@ Target "BuildApp" (fun _ ->
 |> Log "AppBuild-Output: "
 )
 
-"BuildApp"
+
+Target "CreateDatabase" (fun _ ->
+     let x= PowerShell.Create().AddScript(".\utils\database\CreateAndSave.ps1").Invoke()
+     printf "100"
+     )
+
+
+"CreateDatabase"
+==>"BuildApp"
 ==> "Default"
 
 // start build
