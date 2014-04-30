@@ -20,10 +20,9 @@ Target "BuildApp" (fun _ ->
 
 
 Target "CreateDatabase" (fun _ ->
-     let x= PowerShell.Create().AddScript(".\utils\database\CreateAndSave.ps1").Invoke()
-     printf "100"
+     PowerShell.Create().AddScript(".\utils\database\CreateAndSave.ps1").Invoke()
+     |> Seq.iter (printfn "%A")
      )
-
 
 "CreateDatabase"
 ==>"BuildApp"
