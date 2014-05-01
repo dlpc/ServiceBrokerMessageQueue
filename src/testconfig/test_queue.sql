@@ -1,0 +1,1 @@
+CREATE QUEUE test_queue;
