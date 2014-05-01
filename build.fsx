@@ -24,8 +24,8 @@ Target "CreateDatabase" (fun _ ->
      |> Seq.iter (printfn "%A")
      )
 
-"CreateDatabase"
-==>"BuildApp"
+"BuildApp"
+==>"CreateDatabase"
 ==> "Default"
 
 // start build
