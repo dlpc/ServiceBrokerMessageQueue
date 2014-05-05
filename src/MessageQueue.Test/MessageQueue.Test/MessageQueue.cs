@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using NUnit.Framework;
 
@@ -11,16 +12,48 @@ namespace MessageQueue.Test
         [Test]
         public void WriteToQueue()
         {
+            var connection = new SqlConnection(@"Server=.\SQLI03;Database=Test_SMO_Database;Trusted_Connection=True;");
+            Send(connection);
 
-            const string sendCommand = @"DECLARE @message XML ;
-        	SET @message = N'<message>Hello, World!</message>' ;
+            Receive(connection);
+        }
 
-	        -- Declare a variable to hold the conversation
-	        -- handle.
+        private static void Receive(SqlConnection connection)
+        {
+            string SQL = string.Format(@" 
+            waitfor(  
+                RECEIVE top (@count) conversation_handle,service_name,message_type_name,message_body,message_sequence_number  
+                FROM [{0}]  
+                    ), timeout @timeout", "TargetQueue");
+            SqlCommand cmd = new SqlCommand(SQL, connection);
+
+            SqlParameter pCount = cmd.Parameters.Add("@count", SqlDbType.Int);
+            pCount.Value = 1;
+            var timeout = TimeSpan.FromMilliseconds(500);
+            SqlParameter pTimeout = cmd.Parameters.Add("@timeout", SqlDbType.Int);
+
+            if (timeout == TimeSpan.MaxValue)
+            {
+                pTimeout.Value = -1;
+            }
+            else
+            {
+                pTimeout.Value = (int) timeout.TotalMilliseconds;
+            }
+
+            cmd.CommandTimeout = 0; //honor the RECIEVE timeout, whatever it is. 
+
+
+            var result = cmd.ExecuteReader();
+        }
+
+        private static void Send(SqlConnection connection)
+        {
+            const string message = "<message>Message</message>";
+            const string sendCommandTemplate = @"DECLARE @message XML ;
+        	SET @message = N'{0}' ;
 
 	        DECLARE @conversationHandle UNIQUEIDENTIFIER ;
-
-	        -- Begin the dialog.
 
 	        BEGIN DIALOG CONVERSATION @conversationHandle
 		        FROM SERVICE InitiatorService
@@ -28,27 +61,19 @@ namespace MessageQueue.Test
 		        ON CONTRACT HelloWorldContract 
 		        WITH ENCRYPTION = OFF;
 
-        	-- Send the message on the dialog.
-
 	        SEND ON CONVERSATION @conversationHandle
 	        MESSAGE TYPE HelloWorldMessage
 	        (@message) ;";
 
-            SqlCommand command = new SqlCommand();
-            var connection = new SqlConnection(@"Server=.\SQLI03;Database=Test_SMO_Database;Trusted_Connection=True;");
+            var sendCommand = string.Format(sendCommandTemplate, message);
+
+            var command = new SqlCommand();
             command.Connection = connection;
             command.CommandText = sendCommand;
             command.CommandType = CommandType.Text;
 
-            // Add the input parameter and set its properties.
-
-            // Add the parameter to the Parameters collection. 
-
-            // Open the connection and execute the reader.
             connection.Open();
             command.ExecuteScalar();
-
         }
-
     }
 }
