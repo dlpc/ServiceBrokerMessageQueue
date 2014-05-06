@@ -12,7 +12,11 @@ namespace MessageQueue.Test
         [Test]
         public void WriteToQueue()
         {
-            var connection = new SqlConnection(@"Server=.\SQLI03;Database=Test_SMO_Database;Trusted_Connection=True;");
+            string server = @".\SQLI03";
+            string database = @"Test_SMO_Database";
+            const string connectionStringTemplate = @"Server={0};Database={1};Trusted_Connection=True;";
+            string connectionString = string.Format(connectionStringTemplate, server, database);
+            var connection = new SqlConnection(connectionString);
             Send(connection);
 
             Receive(connection);
@@ -20,17 +24,17 @@ namespace MessageQueue.Test
 
         private static void Receive(SqlConnection connection)
         {
-            string SQL = string.Format(@" 
+            string sql = string.Format(@" 
             waitfor(  
                 RECEIVE top (@count) conversation_handle,service_name,message_type_name,message_body,message_sequence_number  
                 FROM [{0}]  
                     ), timeout @timeout", "TargetQueue");
-            SqlCommand cmd = new SqlCommand(SQL, connection);
+            var cmd = new SqlCommand(sql, connection);
 
-            SqlParameter pCount = cmd.Parameters.Add("@count", SqlDbType.Int);
+            var pCount = cmd.Parameters.Add("@count", SqlDbType.Int);
             pCount.Value = 1;
             var timeout = TimeSpan.FromMilliseconds(500);
-            SqlParameter pTimeout = cmd.Parameters.Add("@timeout", SqlDbType.Int);
+            var pTimeout = cmd.Parameters.Add("@timeout", SqlDbType.Int);
 
             if (timeout == TimeSpan.MaxValue)
             {
@@ -67,10 +71,12 @@ namespace MessageQueue.Test
 
             var sendCommand = string.Format(sendCommandTemplate, message);
 
-            var command = new SqlCommand();
-            command.Connection = connection;
-            command.CommandText = sendCommand;
-            command.CommandType = CommandType.Text;
+            var command = new SqlCommand
+            {
+                Connection = connection,
+                CommandText = sendCommand,
+                CommandType = CommandType.Text
+            };
 
             connection.Open();
             command.ExecuteScalar();

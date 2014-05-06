@@ -5,6 +5,4 @@
         void Send(object message);
         object Receive();
     }
-
-    
 }
