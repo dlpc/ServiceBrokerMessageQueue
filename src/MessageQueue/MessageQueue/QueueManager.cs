@@ -7,7 +7,7 @@
 
         public MessageQueue OpenQueue(string queueName)
         {
-            return null;
+            return null;    
         }
     }
 }

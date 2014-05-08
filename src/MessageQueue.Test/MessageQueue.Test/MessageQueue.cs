@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using Common.Test;
 using NUnit.Framework;
 
 namespace MessageQueue.Test
@@ -12,11 +13,7 @@ namespace MessageQueue.Test
         [Test]
         public void WriteToQueue()
         {
-            string server = @".\SQLI03";
-            string database = @"Test_SMO_Database";
-            const string connectionStringTemplate = @"Server={0};Database={1};Trusted_Connection=True;";
-            string connectionString = string.Format(connectionStringTemplate, server, database);
-            var connection = new SqlConnection(connectionString);
+            var connection = DatabaseConnection.CreateSqlConnection();
             Send(connection);
 
             Receive(connection);
