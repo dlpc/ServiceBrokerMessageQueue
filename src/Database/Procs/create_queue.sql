@@ -23,6 +23,17 @@ BEGIN
 
         -- Determine Service Names
 
+    DECLARE @full_queue_name nvarchar(100);
+    DECLARE @SQLString nvarchar(500);
+    DECLARE @ParmDefinition nvarchar(500);
+
+
+    SET @full_queue_name = @queue_name + '_initiator'
+    SET @SQLString =
+     N'CREATE QUEUE [message_queue].['+ @full_queue_name + '];';
+    EXECUTE sp_executesql @SQLString
+
+
 
         -- Check if Service Names Exist 
         
