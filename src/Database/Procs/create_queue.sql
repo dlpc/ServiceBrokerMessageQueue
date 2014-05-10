@@ -1,4 +1,13 @@
-CREATE PROCEDURE message_queue.create_queue
+IF EXISTS ( SELECT  *
+            FROM    sys.objects
+            WHERE   object_id = OBJECT_ID(N'[message_queue].[create_queue]')
+                    AND type IN ( N'P', N'PC' ) ) 
+BEGIN
+    DROP PROCEDURE [message_queue].[create_queue];
+END ;
+GO
+
+CREATE PROCEDURE [message_queue].[create_queue]
 	@queue_name nvarchar(50) 
 AS
 BEGIN
@@ -33,6 +42,10 @@ BEGIN
      N'CREATE QUEUE [message_queue].['+ @full_queue_name + '];';
     EXECUTE sp_executesql @SQLString
 
+    SET @full_queue_name = @queue_name 
+    SET @SQLString =
+     N'CREATE QUEUE [message_queue].['+ @full_queue_name + '];';
+    EXECUTE sp_executesql @SQLString
 
 
         -- Check if Service Names Exist 

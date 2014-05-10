@@ -18,9 +18,9 @@ namespace Database.Test
         }
 
         [Test]
-        public void DoesInitiatorServiceExist()
+        public void DoesCreateQueue_CreateInitiatorAndTargetQueues()
         {
-            using (var scope = new TransactionScope(TransactionScopeOption.Required,new TransactionOptions(){IsolationLevel = IsolationLevel.ReadUncommitted}))
+            using (new TransactionScope(TransactionScopeOption.Required,new TransactionOptions(){IsolationLevel = IsolationLevel.ReadUncommitted}))
             {
                 SqlConnection sqlConnection = DatabaseConnection.CreateSqlConnection();
                 sqlConnection.Open();
@@ -33,20 +33,13 @@ namespace Database.Test
 
                 cmd.ExecuteNonQuery();
 
-                var queueNumber = CheckSysObjectExists("message_queue", "test_queue5_initiator", "SERVICE_QUEUE");
-                Assert.That(queueNumber, Is.EqualTo(1));
+                var initiatorQueue = CheckSysObjectExists("message_queue", "test_queue5_initiator", "SERVICE_QUEUE");
+                Assert.That(initiatorQueue, Is.EqualTo(1));
+
+                var targetQueue = CheckSysObjectExists("message_queue", "test_queue5", "SERVICE_QUEUE");
+                Assert.That(targetQueue, Is.EqualTo(1));
                 
             }
-        }
-
-        [Test]
-        public void DoesTargetQueueExist()
-        {
-        }
-
-        [Test]
-        public void DoesTargetServiceExist()
-        {
         }
 
         [Test]
