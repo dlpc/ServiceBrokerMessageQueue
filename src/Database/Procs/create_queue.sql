@@ -32,21 +32,33 @@ BEGIN
 
         -- Determine Service Names
 
-    DECLARE @full_queue_name nvarchar(100);
+    DECLARE @target_queue_name nvarchar(100);
+    DECLARE @initiator_queue_name nvarchar(100);
+    DECLARE @target_service_name nvarchar(100);
+    DECLARE @initiator_service_name nvarchar(100);
+    
     DECLARE @SQLString nvarchar(500);
     DECLARE @ParmDefinition nvarchar(500);
 
 
-    SET @full_queue_name = @queue_name + '_initiator'
+    SET @initiator_queue_name  = @queue_name + '_initiator'
     SET @SQLString =
-     N'CREATE QUEUE [message_queue].['+ @full_queue_name + '];';
+     N'CREATE QUEUE [message_queue].['+ @initiator_queue_name + '];';
     EXECUTE sp_executesql @SQLString
 
-    SET @full_queue_name = @queue_name 
+    SET @target_queue_name = @queue_name 
     SET @SQLString =
-     N'CREATE QUEUE [message_queue].['+ @full_queue_name + '];';
+     N'CREATE QUEUE [message_queue].['+ @target_queue_name + '];';
     EXECUTE sp_executesql @SQLString
 
+
+    SET @initiator_service_name  = @queue_name + '_initiator_service'
+	SET @SQLString =
+     N'CREATE SERVICE ['+ @initiator_service_name + '] ON QUEUE [message_queue].[' + @initiator_queue_name +'];';
+    EXECUTE sp_executesql @SQLString
+
+	--CREATE SERVICE InitiatorService
+    --ON QUEUE [dbo].[InitiatorQueue];
 
         -- Check if Service Names Exist 
         

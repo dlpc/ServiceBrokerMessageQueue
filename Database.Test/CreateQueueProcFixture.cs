@@ -18,7 +18,7 @@ namespace Database.Test
         }
 
         [Test]
-        public void DoesCreateQueue_CreateInitiatorAndTargetQueues()
+        public void DoesCreateQueue_CreateInitiatorAndTargetQueuesAndServices()
         {
             using (new TransactionScope(TransactionScopeOption.Required,new TransactionOptions(){IsolationLevel = IsolationLevel.ReadUncommitted}))
             {
@@ -38,7 +38,12 @@ namespace Database.Test
 
                 var targetQueue = CheckSysObjectExists("message_queue", "test_queue5", "SERVICE_QUEUE");
                 Assert.That(targetQueue, Is.EqualTo(1));
-                
+
+                var initiatorService = CheckSysServicesExists("test_queue5_initiator_service");
+                Assert.That(initiatorQueue, Is.EqualTo(1));
+
+
+
             }
         }
 
@@ -73,6 +78,27 @@ namespace Database.Test
 
             object numberOfStoredProcs = cmd.ExecuteScalar();
             return numberOfStoredProcs;
+        }
+
+        private static object CheckSysServicesExists(string serviceName)
+        {
+            const string commandText = @"
+                           SELECT COUNT(*)
+                            FROM sys.services
+                            WHERE name = '@service_name'
+                            ;";
+
+            SqlConnection sqlConnection = DatabaseConnection.CreateSqlConnection();
+            sqlConnection.Open();
+            var cmd = new SqlCommand(commandText, sqlConnection);
+
+            SqlParameter serviceParamName = cmd.Parameters.Add("@service_name", SqlDbType.VarChar);
+            serviceParamName.Value = serviceName;
+
+            object services = cmd.ExecuteScalar();
+            return services;
+
+
         }
     }
 }
