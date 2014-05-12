@@ -3,7 +3,7 @@
 namespace MessageQueue.Test
 {
     [TestFixture]
-    public class QueueManager
+    public class QueueManagerFixture
     {
     }
 }

@@ -2,7 +2,7 @@
 {
     public interface MessageQueue
     {
-        void Send(object message);
-        object Receive();
+        void Send(string message);
+        string Receive();
     }
 }
