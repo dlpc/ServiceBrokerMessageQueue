@@ -56,18 +56,15 @@ BEGIN
 	SET @SQLString =
      N'CREATE SERVICE ['+ @initiator_service_name + '] ON QUEUE [message_queue].[' + @initiator_queue_name +'];';
     EXECUTE sp_executesql @SQLString
+    
+    SET @target_service_name  = @queue_name + '_service'
+	SET @SQLString =
+     N'CREATE SERVICE ['+ @target_service_name + '] ON QUEUE [message_queue].[' + @target_queue_name +'];';
+    EXECUTE sp_executesql @SQLString
 
-	--CREATE SERVICE InitiatorService
-    --ON QUEUE [dbo].[InitiatorQueue];
 
-        -- Check if Service Names Exist 
-        
-        -- Determine Service Names
-
-        -- Check if Service Names Exist
-
-        IF @localTran = 1 AND XACT_STATE() = 1
-            COMMIT TRAN LocalTran
+    IF @localTran = 1 AND XACT_STATE() = 1
+        COMMIT TRAN LocalTran
  
     END TRY
     BEGIN CATCH

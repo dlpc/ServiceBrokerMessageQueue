@@ -13,37 +13,34 @@ namespace Database.Test
         private const string StoredProcName = "create_queue";
 
         [Test]
-        public void DoesInitiatorQueueExist()
-        {
-        }
-
-        [Test]
         public void DoesCreateQueue_CreateInitiatorAndTargetQueuesAndServices()
         {
-            using (new TransactionScope(TransactionScopeOption.Required,new TransactionOptions(){IsolationLevel = IsolationLevel.ReadUncommitted}))
+            using (new TransactionScope(TransactionScopeOption.Required,new TransactionOptions {IsolationLevel = IsolationLevel.ReadUncommitted}))
             {
-                SqlConnection sqlConnection = DatabaseConnection.CreateSqlConnection();
+                var sqlConnection = DatabaseConnection.CreateSqlConnection();
                 sqlConnection.Open();
 
-                var cmd = new SqlCommand("message_queue.create_queue", sqlConnection);
-                cmd.CommandType = CommandType.StoredProcedure;
+                var cmd = new SqlCommand("message_queue.create_queue", sqlConnection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
 
-                SqlParameter procNameParam = cmd.Parameters.Add("@queue_name", SqlDbType.NVarChar);
+                var procNameParam = cmd.Parameters.Add("@queue_name", SqlDbType.NVarChar);
                 procNameParam.Value = "test_queue5";
 
                 cmd.ExecuteNonQuery();
 
-                var initiatorQueue = CheckSysObjectExists("message_queue", "test_queue5_initiator", "SERVICE_QUEUE");
-                Assert.That(initiatorQueue, Is.EqualTo(1));
+                var initiatorQueueCount = CheckSysObjectExists("message_queue", "test_queue5_initiator", "SERVICE_QUEUE");
+                Assert.That(initiatorQueueCount, Is.True);
 
-                var targetQueue = CheckSysObjectExists("message_queue", "test_queue5", "SERVICE_QUEUE");
-                Assert.That(targetQueue, Is.EqualTo(1));
+                var targetQueueCount = CheckSysObjectExists("message_queue", "test_queue5", "SERVICE_QUEUE");
+                Assert.That(targetQueueCount, Is.True);
 
-                var initiatorService = CheckSysServicesExists("test_queue5_initiator_service");
-                Assert.That(initiatorQueue, Is.EqualTo(1));
+                var initiatorServiceCount = CheckSysServicesExists("test_queue5_initiator_service");
+                Assert.That(initiatorServiceCount, Is.True);
 
-
-
+                var targetServiceCount = CheckSysServicesExists("test_queue5_service");
+                Assert.That(targetServiceCount, Is.True);
             }
         }
 
@@ -56,49 +53,47 @@ namespace Database.Test
             Assert.That(numberOfStoredProcs, Is.EqualTo(1));
         }
         
-        private static object CheckSysObjectExists(string schemaName, string objectName, string type)
+        private static bool CheckSysObjectExists(string schemaName, string objectName, string type)
         {
             const string commandText = @"
                 SELECT COUNT(*) FROM [sys].[objects] inner join sys.schemas 
                 on sys.objects.schema_id = sys.schemas.schema_id
                 where  [sys].[objects].[type_desc] = @object_type AND [sys].[schemas].[name] = @schema_name AND [sys].[objects].[name] =
                 @proc_name";
-            SqlConnection sqlConnection = DatabaseConnection.CreateSqlConnection();
+            var sqlConnection = DatabaseConnection.CreateSqlConnection();
             sqlConnection.Open();
             var cmd = new SqlCommand(commandText, sqlConnection);
 
-            SqlParameter objectNameParam = cmd.Parameters.Add("@proc_name", SqlDbType.VarChar);
+            var objectNameParam = cmd.Parameters.Add("@proc_name", SqlDbType.VarChar);
             objectNameParam.Value = objectName;
 
-            SqlParameter objectTypeParam = cmd.Parameters.Add("@object_type", SqlDbType.VarChar);
+            var objectTypeParam = cmd.Parameters.Add("@object_type", SqlDbType.VarChar);
             objectTypeParam.Value = type;
 
-            SqlParameter schemaNameParam = cmd.Parameters.Add("@schema_name", SqlDbType.VarChar);
+            var schemaNameParam = cmd.Parameters.Add("@schema_name", SqlDbType.VarChar);
             schemaNameParam.Value = schemaName;
 
             object numberOfStoredProcs = cmd.ExecuteScalar();
-            return numberOfStoredProcs;
+            return (int)numberOfStoredProcs ==  1;
         }
 
-        private static object CheckSysServicesExists(string serviceName)
+        private static bool CheckSysServicesExists(string serviceName)
         {
             const string commandText = @"
                            SELECT COUNT(*)
                             FROM sys.services
-                            WHERE name = '@service_name'
+                            WHERE name = @service_name
                             ;";
 
-            SqlConnection sqlConnection = DatabaseConnection.CreateSqlConnection();
+            var sqlConnection = DatabaseConnection.CreateSqlConnection();
             sqlConnection.Open();
             var cmd = new SqlCommand(commandText, sqlConnection);
 
-            SqlParameter serviceParamName = cmd.Parameters.Add("@service_name", SqlDbType.VarChar);
+            var serviceParamName = cmd.Parameters.Add("@service_name", SqlDbType.VarChar);
             serviceParamName.Value = serviceName;
 
-            object services = cmd.ExecuteScalar();
-            return services;
-
-
+            var numberOfServices = cmd.ExecuteScalar();
+            return (int)numberOfServices == 1;
         }
     }
 }

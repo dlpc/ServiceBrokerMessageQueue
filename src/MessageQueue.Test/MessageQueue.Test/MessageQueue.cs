@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
+using System.Globalization;
+using System.Text;
 using Common.Test;
 using NUnit.Framework;
 
@@ -14,18 +17,20 @@ namespace MessageQueue.Test
         public void WriteToQueue()
         {
             var connection = DatabaseConnection.CreateSqlConnection();
-            Send(connection);
+            const string sentMessage = "<message>Message</message>";
+            Send(connection, sentMessage);
+            
+            string receivedMessage = Receive(connection);
 
-            Receive(connection);
+            Assert.That(sentMessage.ToString(CultureInfo.CurrentCulture),Is.EqualTo(receivedMessage.ToString(CultureInfo.CurrentCulture)));
         }
 
-        private static void Receive(SqlConnection connection)
+        private static string Receive(SqlConnection connection)
         {
             string sql = string.Format(@" 
             waitfor(  
-                RECEIVE top (@count) conversation_handle,service_name,message_type_name,message_body,message_sequence_number  
-                FROM [{0}]  
-                    ), timeout @timeout", "TargetQueue");
+                RECEIVE top (@count) conversation_handle,service_name,message_type_name, CAST(message_body AS XML) as msg,message_sequence_number  
+                FROM [{0}]), timeout @timeout", "TargetQueue");
             var cmd = new SqlCommand(sql, connection);
 
             var pCount = cmd.Parameters.Add("@count", SqlDbType.Int);
@@ -42,16 +47,17 @@ namespace MessageQueue.Test
                 pTimeout.Value = (int) timeout.TotalMilliseconds;
             }
 
-            cmd.CommandTimeout = 0; //honor the RECIEVE timeout, whatever it is. 
-
-
-            var result = cmd.ExecuteReader();
+            cmd.CommandTimeout = 0;
+            
+            
+            SqlDataReader result = cmd.ExecuteReader();
+            result.Read();
+            return (string)result["msg"];
         }
 
-        private static void Send(SqlConnection connection)
+        private static void Send(SqlConnection connection, string message)
         {
-            const string message = "<message>Message</message>";
-            const string sendCommandTemplate = @"DECLARE @message XML ;
+            const string sendCommandTemplate = @"DECLARE @message XML;
         	SET @message = N'{0}' ;
 
 	        DECLARE @conversationHandle UNIQUEIDENTIFIER ;
