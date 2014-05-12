@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Message.cs" />
+    <Compile Include="QueueNameConvention.cs" />
     <Compile Include="ServiceBrokerMessageQueue.cs" />
     <Compile Include="MessageQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

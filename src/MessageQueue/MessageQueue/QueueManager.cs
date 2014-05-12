@@ -19,5 +19,10 @@
         {
             return null;    
         }
+
+        public void CreateQueue(string queueName)
+        {
+            
+        }
     }
 }

@@ -10,9 +10,9 @@ namespace MessageQueue.Test
         [Test]
         public void WriteToQueue()
         {
-            var connection = DatabaseConnection.CreateSqlConnection();
+            var connection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
             const string sentMessage = "<message>Message</message>";
-            var mq = new ServiceBrokerMessageQueue(connection);
+            var mq = new ServiceBrokerMessageQueue(connection,"test_queue");
             mq.Send(sentMessage);
 
             var receivedMessage = mq.Receive();

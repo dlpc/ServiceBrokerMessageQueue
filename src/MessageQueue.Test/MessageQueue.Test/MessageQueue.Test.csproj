@@ -45,6 +45,7 @@
     <Compile Include="MessageQueueFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueManagerFixture.cs" />
+    <Compile Include="QueueNameConventionFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

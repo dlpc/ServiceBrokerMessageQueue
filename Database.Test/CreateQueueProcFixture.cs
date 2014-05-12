@@ -17,7 +17,7 @@ namespace Database.Test
         {
             using (new TransactionScope(TransactionScopeOption.Required,new TransactionOptions {IsolationLevel = IsolationLevel.ReadUncommitted}))
             {
-                var sqlConnection = DatabaseConnection.CreateSqlConnection();
+                var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
                 sqlConnection.Open();
 
                 var cmd = new SqlCommand("message_queue.create_queue", sqlConnection)
@@ -50,7 +50,7 @@ namespace Database.Test
             const string schemaName = "message_queue";
             var numberOfStoredProcs = CheckSysObjectExists(schemaName, StoredProcName, "SQL_STORED_PROCEDURE");
 
-            Assert.That(numberOfStoredProcs, Is.EqualTo(1));
+            Assert.That(numberOfStoredProcs, Is.True);
         }
         
         private static bool CheckSysObjectExists(string schemaName, string objectName, string type)
@@ -60,7 +60,7 @@ namespace Database.Test
                 on sys.objects.schema_id = sys.schemas.schema_id
                 where  [sys].[objects].[type_desc] = @object_type AND [sys].[schemas].[name] = @schema_name AND [sys].[objects].[name] =
                 @proc_name";
-            var sqlConnection = DatabaseConnection.CreateSqlConnection();
+            var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
             sqlConnection.Open();
             var cmd = new SqlCommand(commandText, sqlConnection);
 
@@ -85,7 +85,7 @@ namespace Database.Test
                             WHERE name = @service_name
                             ;";
 
-            var sqlConnection = DatabaseConnection.CreateSqlConnection();
+            var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
             sqlConnection.Open();
             var cmd = new SqlCommand(commandText, sqlConnection);
 
