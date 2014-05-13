@@ -7,8 +7,8 @@
     <ProjectGuid>{DFFD2474-C064-4F31-AF39-DB5902D3E6E8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Common.Test</RootNamespace>
-    <AssemblyName>Common.Test</AssemblyName>
+    <RootNamespace>Common</RootNamespace>
+    <AssemblyName>Common</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

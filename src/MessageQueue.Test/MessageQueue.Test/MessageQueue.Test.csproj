@@ -52,9 +52,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Common.Test\Common.Test.csproj">
+    <ProjectReference Include="..\..\Common.Test\Common.csproj">
       <Project>{DFFD2474-C064-4F31-AF39-DB5902D3E6E8}</Project>
-      <Name>Common.Test</Name>
+      <Name>Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\MessageQueue\MessageQueue\MessageQueue.csproj">
       <Project>{ECA8F3A4-1388-4E63-AB7B-3CC29256317D}</Project>

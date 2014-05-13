@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Common.Test;
 using NUnit.Framework;
 
 namespace MessageQueue.Test

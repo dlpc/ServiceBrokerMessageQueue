@@ -1,5 +1,6 @@
 ﻿using System.Transactions;
-using Common.Test;
+using Common;
+using MessageQueue.Exception;
 using NUnit.Framework;
 
 namespace MessageQueue.Test
@@ -30,7 +31,21 @@ namespace MessageQueue.Test
             qmgr.CreateQueue("test_queue");
 
             Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", "test_queue", "SERVICE_QUEUE"),Is.True);
+        }
 
+        [Test]
+        [Ignore]
+        public void OpenQueue_OpensNamedMessageQueue()
+        {
+            var qmgr = new QueueManager(@".\SQLI03", "Test_SMO_Database");
+            qmgr.CreateQueue("test_queue");            
+        }
+
+        [Test]
+        public void OpenQueue_ThrowsIfQueueDoesNotExist()
+        {
+            var qmgr = new QueueManager(@".\SQLI03", "Test_SMO_Database");
+            Assert.Throws<QueueNotFoundException>(() => qmgr.OpenQueue("non_existant_test_queue"));
         }
 
     }

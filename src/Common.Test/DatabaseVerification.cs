@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
 
-namespace Common.Test
+namespace Common
 {
     public class DatabaseVerification
     {

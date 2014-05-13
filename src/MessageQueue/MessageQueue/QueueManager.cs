@@ -1,12 +1,12 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using Common;
+using MessageQueue.Exception;
 
 namespace MessageQueue
 {
     public class QueueManager
     {
-
-
         public QueueManager(string server, string database)
         {
             Server = server;
@@ -18,7 +18,20 @@ namespace MessageQueue
 
         public MessageQueue OpenQueue(string queueName)
         {
-            return null;    
+            CheckIfMessageQueueExists(queueName);
+
+            return null;
+        }
+
+        private static void CheckIfMessageQueueExists(string queueName)
+        {
+            bool doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE");
+
+            if (!doesQueueExist)
+            {
+                const string message = "Queue {0} cannot be opened, it does not exist";
+                throw new QueueNotFoundException(string.Format(message, queueName));
+            }
         }
 
         public void CreateQueue(string queueName)
@@ -38,5 +51,6 @@ namespace MessageQueue
 
             
         }
+
     }
 }

@@ -50,9 +50,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Common.Test\Common.Test.csproj">
+    <ProjectReference Include="..\src\Common.Test\Common.csproj">
       <Project>{DFFD2474-C064-4F31-AF39-DB5902D3E6E8}</Project>
-      <Name>Common.Test</Name>
+      <Name>Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
