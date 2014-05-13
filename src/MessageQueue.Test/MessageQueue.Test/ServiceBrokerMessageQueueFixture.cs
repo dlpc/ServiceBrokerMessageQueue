@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace MessageQueue.Test
 {
     [TestFixture]
-    public class MessageQueueFixture
+    public class ServiceBrokerMessageQueueFixture
     {
         [Test]
         public void WriteToQueue()

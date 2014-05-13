@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Data.SqlClient;
 
-namespace Common.Test
+namespace MessageQueue
 {
     public class DatabaseConnection
     {
-        public static string Database { get; private set; }
-        public static string Server { get; private set; }
-
-
         public static SqlConnection CreateSqlConnection(string server, string database)
         {
             const string connectionStringTemplate = @"Server={0};Database={1};Trusted_Connection=True;";
@@ -18,5 +14,6 @@ namespace Common.Test
 
 
         }
+
     }
 }

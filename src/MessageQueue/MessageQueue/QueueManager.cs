@@ -1,10 +1,11 @@
-﻿namespace MessageQueue
+﻿using System.Data;
+using System.Data.SqlClient;
+
+namespace MessageQueue
 {
     public class QueueManager
     {
-        public QueueManager()
-        {
-        }
+
 
         public QueueManager(string server, string database)
         {
@@ -22,6 +23,19 @@
 
         public void CreateQueue(string queueName)
         {
+            var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
+            sqlConnection.Open();
+
+            var cmd = new SqlCommand("message_queue.create_queue", sqlConnection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            var procNameParam = cmd.Parameters.Add("@queue_name", SqlDbType.NVarChar);
+            procNameParam.Value = queueName;
+
+            cmd.ExecuteNonQuery();
+
             
         }
     }
