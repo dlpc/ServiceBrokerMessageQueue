@@ -20,7 +20,7 @@ namespace MessageQueue
         {
             CheckIfMessageQueueExists(queueName);
 
-            return null;
+            return new ServiceBrokerMessageQueue(DatabaseConnection.CreateSqlConnection(Server,Database),queueName);
         }
 
         private static void CheckIfMessageQueueExists(string queueName)

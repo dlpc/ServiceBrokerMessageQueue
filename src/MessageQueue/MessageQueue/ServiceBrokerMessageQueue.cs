@@ -7,17 +7,18 @@ namespace MessageQueue
     internal class ServiceBrokerMessageQueue : MessageQueue, IDisposable
     {
         private readonly SqlConnection _connection;
-        private readonly string _queueName;
 
         public ServiceBrokerMessageQueue(SqlConnection connection, string queueName)
         {
             _connection = connection;
-            _queueName = queueName;
+            QueueName = queueName;
         }
 
         public void Dispose()
         {
         }
+
+        public string QueueName { get; private set; }
 
         public void Send(string message)
         {
