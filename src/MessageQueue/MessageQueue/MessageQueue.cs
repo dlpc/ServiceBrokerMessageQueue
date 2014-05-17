@@ -1,6 +1,6 @@
 ﻿namespace MessageQueue
 {
-    public interface MessageQueue
+    public interface MessageQueue 
     {
         string QueueName { get; }
 

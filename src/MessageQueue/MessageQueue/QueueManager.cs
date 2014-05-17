@@ -25,13 +25,12 @@ namespace MessageQueue
 
         private static void CheckIfMessageQueueExists(string queueName)
         {
-            bool doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE");
+            var doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE");
 
-            if (!doesQueueExist)
-            {
-                const string message = "Queue {0} cannot be opened, it does not exist";
-                throw new QueueNotFoundException(string.Format(message, queueName));
-            }
+            if (doesQueueExist) return;
+
+            const string message = "Queue {0} cannot be opened, it does not exist";
+            throw new QueueNotFoundException(string.Format(message, queueName));
         }
 
         public void CreateQueue(string queueName)
@@ -48,8 +47,6 @@ namespace MessageQueue
             procNameParam.Value = queueName;
 
             cmd.ExecuteNonQuery();
-
-            
         }
 
     }

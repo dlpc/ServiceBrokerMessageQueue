@@ -5,12 +5,8 @@ using NUnit.Framework;
 
 namespace MessageQueue.Test
 {
-    [TestFixture]
-    public class QueueManagerFixture
+    public class RollbackFixture
     {
-        private const string Server = @".\SQLI03";
-        private const string Database = "Test_SMO_Database";
-        private const string _queueName = "test_queue";
         private TransactionScope _scope;
 
         [SetUp]
@@ -25,25 +21,33 @@ namespace MessageQueue.Test
             _scope.Dispose();
             _scope = null;
         }
+    }
+
+    [TestFixture]
+    public class QueueManagerFixture : RollbackFixture
+    {
+        private const string Server = @".\SQLI03";
+        private const string Database = "Test_SMO_Database";
+        private const string QueueName = "test_queue";
 
 
         [Test]
         public void CreateQueue_CreatesNamedQueue()
         {
             var qmgr = new QueueManager(Server,Database);
-            qmgr.CreateQueue(_queueName);
+            qmgr.CreateQueue(QueueName);
 
-            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", _queueName, "SERVICE_QUEUE"),Is.True);
+            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE"),Is.True);
         }
 
         [Test]
         public void OpenQueue_OpensNamedMessageQueue()
         {
             var qmgr = new QueueManager(Server, Database);
-            qmgr.CreateQueue(_queueName);
-            var q = qmgr.OpenQueue(_queueName);
+            qmgr.CreateQueue(QueueName);
+            var q = qmgr.OpenQueue(QueueName);
 
-            Assert.That(q.QueueName, Is.EqualTo(_queueName));
+            Assert.That(q.QueueName, Is.EqualTo(QueueName));
         }
 
         [Test]

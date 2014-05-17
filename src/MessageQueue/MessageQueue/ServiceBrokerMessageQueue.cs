@@ -32,16 +32,16 @@ namespace MessageQueue
 	            DECLARE @conversationHandle UNIQUEIDENTIFIER ;
 
 	            BEGIN DIALOG CONVERSATION @conversationHandle
-		            FROM SERVICE InitiatorService
-		            TO SERVICE 'TargetService'
-		            ON CONTRACT HelloWorldContract 
+		            FROM SERVICE {1}
+		            TO SERVICE '{2}'
 		            WITH ENCRYPTION = OFF;
 
 	            SEND ON CONVERSATION @conversationHandle
-	            MESSAGE TYPE HelloWorldMessage
 	            (@message);";
 
-                string sendCommand = String.Format(sendCommandTemplate, message);
+                string sendCommand = String.Format(sendCommandTemplate, message, 
+                    QueueNameConvention.GetInitiatorServiceName(QueueName),
+                    QueueNameConvention.GetTargetServiceName(QueueName));
 
                 var cmd = new SqlCommand
                 {
@@ -69,7 +69,7 @@ namespace MessageQueue
 
                 string sql = String.Format(@"waitfor(  
                 RECEIVE top (@count) conversation_handle,service_name,message_type_name, CAST(message_body AS XML) as msg,message_sequence_number  
-                FROM [{0}]), timeout @timeout", "TargetQueue");
+                FROM [{0}]), timeout @timeout","message_queue].[" + QueueNameConvention.GetTargetQueueName(QueueName) +"");
                 var cmd = new SqlCommand(sql, _connection);
 
                 SqlParameter pCount = cmd.Parameters.Add("@count", SqlDbType.Int);
