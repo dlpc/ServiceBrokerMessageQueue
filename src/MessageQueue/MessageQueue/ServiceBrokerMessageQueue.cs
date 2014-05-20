@@ -57,6 +57,7 @@ namespace MessageQueue
             }
             finally
             {
+                
                 _connection.Close();
             }
         }
