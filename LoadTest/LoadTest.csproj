@@ -51,6 +51,16 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\Common.Test\Common.csproj">
+      <Project>{dffd2474-c064-4f31-af39-db5902d3e6e8}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\src\MessageQueue\MessageQueue\MessageQueue.csproj">
+      <Project>{eca8f3a4-1388-4e63-ab7b-3cc29256317d}</Project>
+      <Name>MessageQueue</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

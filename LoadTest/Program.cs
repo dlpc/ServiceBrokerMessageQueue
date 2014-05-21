@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Messaging;
 using System.Threading;
 using System.Transactions;
+using MessageQueue;
 
 namespace LoadTest
 {
@@ -22,22 +23,46 @@ namespace LoadTest
 
             const int value = 1;
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 1; i++)
             {
-                var thread = new Thread(() => WriteToQueues(messageQueueName, value));
+                var thread = new Thread(() => WriteToMsmqAndDatabase(messageQueueName, value));
                 thread.Start();
             }
 
-            for (var i = 0; i < 10; i++)
+
+
+            for (var i = 0; i < 1; i++)
             {
                 var thread = new Thread(() => WriteToDatabase(messageQueueName, value));
+                thread.Start();
+            }
+            for (var i = 0; i < 1; i++)
+            {
+              var thread = new Thread(() => WriteSbmqAndDatabase(messageQueueName, value));
                 thread.Start();
             }
 
 
         }
 
-        private static void WriteToQueues(string messageQueueName, int value)
+
+        private static void WriteSbmqAndDatabase(string messageQueueName, int value)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+
+            const int numberOfExecutions = 1000;
+            for (int i = 0; i < numberOfExecutions; i++)
+            {
+                WriteToSbQueueAndDatabase(messageQueueName, value);
+            }
+            sw.Stop();
+
+            Console.WriteLine("{0} entries written to SBMQ and Database in {1} ms", numberOfExecutions,
+                sw.ElapsedMilliseconds);
+        }
+
+        private static void WriteToMsmqAndDatabase(string messageQueueName, int value)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -73,10 +98,10 @@ namespace LoadTest
 
         private static void WriteToQueueAndDatabase(string messageQueueName, int value)
         {
-            using (var scope = new TransactionScope())
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
             {
                 string msmq = string.Format(@".\private$\{0}", messageQueueName);
-                var messageQueue = new MessageQueue(msmq);
+                var messageQueue = new System.Messaging.MessageQueue(msmq);
                 messageQueue.Send("sds", MessageQueueTransactionType.Automatic);
 
                 var connection = new SqlConnection(
@@ -94,17 +119,60 @@ namespace LoadTest
                 cmd.Parameters.AddWithValue("data", value);
 
                 cmd.ExecuteNonQuery();
+                cmd.Dispose();
                 connection.Close();
                 scope.Complete();
             }
         }
 
+        private static void WriteToSbQueueAndDatabase(string messageQueueName, int value)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
+            {
+//                string msmq = string.Format(@".\private$\{0}", messageQueueName);
+//                var messageQueue = new MessageQueue(msmq);
+//                messageQueue.Send("sds", MessageQueueTransactionType.Automatic);
+
+                var qm = new QueueManager(@".\SQLI03", "Test_SMO_Database");
+                var q  = qm.OpenQueue(messageQueueName);
+                q.Send("SDS");
+
+                using (var connection = new SqlConnection(
+                    ConfigurationManager.ConnectionStrings["DB"].ToString())
+                    )
+                {
+
+
+
+
+                    connection.Open();
+                    var cmd = new SqlCommand
+                    {
+                        Connection = connection,
+                        CommandType = CommandType.Text,
+                        CommandText = @"Insert into test_table            ([key]
+                    ,[data])values (@key,@data)"
+                    };
+
+                    cmd.Parameters.AddWithValue("key", Guid.NewGuid().ToString());
+                    cmd.Parameters.AddWithValue("data", value);
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                    connection.Close();
+                    connection.Dispose();
+
+                }
+                scope.Complete();
+            }
+            
+        }
+
+
         private static void WriteToDatabase(int value)
         {
-            using (var scope = new TransactionScope())
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
             {
-
-
                 var connection = new SqlConnection(
                     ConfigurationManager.ConnectionStrings["DB"].ToString());
                 connection.Open();
@@ -120,7 +188,7 @@ namespace LoadTest
                 cmd.Parameters.AddWithValue("data", value);
 
                 cmd.ExecuteNonQuery();
-
+                cmd.Dispose();
                 cmd.Parameters["key"].Value = Guid.NewGuid().ToString();
                 cmd.ExecuteNonQuery();
                 connection.Close();
