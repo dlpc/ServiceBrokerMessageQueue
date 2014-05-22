@@ -1,10 +1,11 @@
 ﻿using System.Globalization;
+using System.Transactions;
 using NUnit.Framework;
 
 namespace MessageQueue.Test
 {
     [TestFixture]
-    public class ServiceBrokerMessageQueueFixture : RollbackFixture
+    public class ServiceBrokerMessageQueueFixture 
     {
         private const string TestQueue = "test_queue";
 
@@ -14,9 +15,16 @@ namespace MessageQueue.Test
             const string sentMessage = "<message>Message</message>";
             var qMgr = new QueueManager(@".\SQLI03",@"Test_SMO_Database");
           
-            qMgr.CreateQueue(TestQueue);
+           // qMgr.CreateQueue(TestQueue);
             var mq = qMgr.OpenQueue(TestQueue);
-            mq.Send(sentMessage);
+
+            using (var scope = new TransactionScope())
+            {
+                mq.Send(sentMessage);
+                scope.Complete();
+                
+            }
+
 
             var receivedMessage = mq.Receive();
 

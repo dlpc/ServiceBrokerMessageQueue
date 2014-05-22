@@ -36,9 +36,21 @@ BEGIN
     DECLARE @initiator_queue_name nvarchar(100);
     DECLARE @target_service_name nvarchar(100);
     DECLARE @initiator_service_name nvarchar(100);
+    DECLARE @message_type_name nvarchar(100);
+    DECLARE @contract_name nvarchar(100);
+
     
     DECLARE @SQLString nvarchar(500);
     DECLARE @ParmDefinition nvarchar(500);
+
+    SET @message_type_name  = @queue_name + '_message'
+    SET @SQLString = N'CREATE MESSAGE TYPE ' + @message_type_name +
+    ' VALIDATION = WELL_FORMED_XML ;'
+    EXECUTE sp_executesql @SQLString
+    
+    SET @contract_name  = @queue_name + '_contract'
+    SET @SQLString = 'CREATE CONTRACT ' + @contract_name + '(' + @message_type_name + ' SENT BY INITIATOR);'
+    EXECUTE sp_executesql @SQLString
 
 
     SET @initiator_queue_name  = @queue_name + '_initiator'
@@ -58,10 +70,9 @@ BEGIN
     EXECUTE sp_executesql @SQLString
     
     SET @target_service_name  = @queue_name + '_service'
-	SET @SQLString =
-     N'CREATE SERVICE ['+ @target_service_name + '] ON QUEUE [message_queue].[' + @target_queue_name +'];';
+    SET @SQLString =
+     N'CREATE SERVICE ['+ @target_service_name + '] ON QUEUE [message_queue].[' + @target_queue_name +'] (' + @contract_name + ');';
     EXECUTE sp_executesql @SQLString
-
 
     IF @localTran = 1 AND XACT_STATE() = 1
         COMMIT TRAN LocalTran

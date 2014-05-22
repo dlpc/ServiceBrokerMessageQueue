@@ -19,30 +19,27 @@ namespace LoadTest
             //check database
 
             //check message queue
-              string messageQueueName = args[2];
+            string messageQueueName = args[2];
 
             const int value = 1;
 
-            for (var i = 0; i < 1; i++)
+            for (int i = 0; i < 1; i++)
             {
                 var thread = new Thread(() => WriteToMsmqAndDatabase(messageQueueName, value));
                 thread.Start();
             }
 
 
-
-            for (var i = 0; i < 1; i++)
+            for (int i = 0; i < 1; i++)
             {
                 var thread = new Thread(() => WriteToDatabase(messageQueueName, value));
                 thread.Start();
             }
-            for (var i = 0; i < 1; i++)
+            for (int i = 0; i < 1; i++)
             {
-              var thread = new Thread(() => WriteSbmqAndDatabase(messageQueueName, value));
+                var thread = new Thread(() => WriteSbmqAndDatabase(messageQueueName, value));
                 thread.Start();
             }
-
-
         }
 
 
@@ -94,7 +91,6 @@ namespace LoadTest
                 sw.ElapsedMilliseconds);
         }
 
-        
 
         private static void WriteToQueueAndDatabase(string messageQueueName, int value)
         {
@@ -127,24 +123,16 @@ namespace LoadTest
 
         private static void WriteToSbQueueAndDatabase(string messageQueueName, int value)
         {
+            var qm = new QueueManager(@".\SQLI03", "Test_SMO_Database");
+            var q = qm.OpenQueue(messageQueueName);
+
             using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
             {
-//                string msmq = string.Format(@".\private$\{0}", messageQueueName);
-//                var messageQueue = new MessageQueue(msmq);
-//                messageQueue.Send("sds", MessageQueueTransactionType.Automatic);
+                q.Send("<message>Message</message>");
 
-                var qm = new QueueManager(@".\SQLI03", "Test_SMO_Database");
-                var q  = qm.OpenQueue(messageQueueName);
-                q.Send("SDS");
-
-                using (var connection = new SqlConnection(
-                    ConfigurationManager.ConnectionStrings["DB"].ToString())
-                    )
+                using (var connection = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["DB"].ToString()))
                 {
-
-
-
-
                     connection.Open();
                     var cmd = new SqlCommand
                     {
@@ -161,11 +149,9 @@ namespace LoadTest
                     cmd.Dispose();
                     connection.Close();
                     connection.Dispose();
-
                 }
                 scope.Complete();
             }
-            
         }
 
 
@@ -195,6 +181,5 @@ namespace LoadTest
                 scope.Complete();
             }
         }
-
     }
 }

@@ -34,14 +34,18 @@ namespace MessageQueue
 	            BEGIN DIALOG CONVERSATION @conversationHandle
 		            FROM SERVICE {1}
 		            TO SERVICE '{2}'
+                    
+		            ON CONTRACT [{3}]
 		            WITH ENCRYPTION = OFF;
 
-	            SEND ON CONVERSATION @conversationHandle
-	            (@message);";
+	            SEND ON CONVERSATION @conversationHandle  
+                MESSAGE TYPE {4}
+                 (@message);";
 
                 string sendCommand = String.Format(sendCommandTemplate, message, 
                     QueueNameConvention.GetInitiatorServiceName(QueueName),
-                    QueueNameConvention.GetTargetServiceName(QueueName));
+                    QueueNameConvention.GetTargetServiceName(QueueName),
+                    QueueName + "_contract",QueueName + "_message");
 
                 var cmd = new SqlCommand
                 {
@@ -53,12 +57,14 @@ namespace MessageQueue
 //                SqlParameter pCount = cmd.Parameters.Add("@initiatorService", SqlDbType.NVarChar);
 //                pCount.Value = QueueNameConvention.GetInitiatorServiceName(_queueName);
 
-                cmd.ExecuteScalar();
+                cmd.ExecuteNonQuery();
+                cmd.Dispose();
             }
             finally
             {
                 
                 _connection.Close();
+               
             }
         }
 
