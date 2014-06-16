@@ -10,6 +10,8 @@ open System.Management.Automation
 
 // Properties
 let buildDir = "./build/"
+let SQLServer = @".\SQLIO3"
+let SQLDatabase = @"SBMQ"
 
 // Default target
 Target "Default" (fun _ ->
@@ -17,10 +19,9 @@ Target "Default" (fun _ ->
     
 )
 
-Target "BuildApp" (fun _ ->
-!! "ServiceBrokerMessageQueue.sln"
-|> MSBuildRelease buildDir "Build"
-|> Log "AppBuild-Output: "
+Target "DeleteDatabase" (fun _ ->
+    trace "Deleting database"
+    
 )
 
 
@@ -29,8 +30,7 @@ Target "CreateDatabase" (fun _ ->
      |> Seq.iter (printfn "%A")
      )
 
-"BuildApp"
-==>"CreateDatabase"
+"CreateDatabase"
 ==> "Default"
 
 // start build
