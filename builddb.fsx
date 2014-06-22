@@ -10,18 +10,24 @@ open System.Management.Automation
 
 // Properties
 let buildDir = "./build/"
-let SQLServer = @".\SQLIO3"
+let SQLServer = @".\SQLI03"
 let SQLDatabase = @"SBMQ"
-
+let ConnectionString = sprintf "Server=%s;Database=%s;Trusted_Connection=True;" SQLServer SQLDatabase 
+ 
 // Default target
 Target "Default" (fun _ ->
     trace "Executing Default Target"
     
 )
 
-Target "DeleteDatabase" (fun _ ->
+Target "CreateStoredProcedures" (fun _ ->
+    trace "Creating Stored Procedures"
+)
+
+
+Target "DropAndCreateDatabase" (fun _ ->
     trace "Deleting database"
-    
+    Fake.SQL.SqlServer.DropAndCreateDatabase  ConnectionString
 )
 
 
@@ -30,7 +36,8 @@ Target "CreateDatabase" (fun _ ->
      |> Seq.iter (printfn "%A")
      )
 
-"CreateDatabase"
+"DropAndCreateDatabase"
+==> "CreateStoredProcedures"
 ==> "Default"
 
 // start build
