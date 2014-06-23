@@ -20,8 +20,15 @@ Target "Default" (fun _ ->
     
 )
 
+Target "CreateSchema" (fun _ ->
+    trace "Creating Schema"
+    Fake.SQL.SqlServer.RunScriptsFromDirectory ConnectionString ".\src\Database\Schema"
+)
+
+
 Target "CreateStoredProcedures" (fun _ ->
     trace "Creating Stored Procedures"
+    Fake.SQL.SqlServer.RunScriptsFromDirectory ConnectionString ".\src\Database\Procs"
 )
 
 
@@ -37,6 +44,7 @@ Target "CreateDatabase" (fun _ ->
      )
 
 "DropAndCreateDatabase"
+==> "CreateSchema"
 ==> "CreateStoredProcedures"
 ==> "Default"
 

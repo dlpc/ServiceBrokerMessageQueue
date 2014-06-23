@@ -8,9 +8,9 @@ END ;
 GO
 
 CREATE PROCEDURE [message_queue].[send_message]
-	@from_service nvarchar(50)
-	@to_service nvarchar(50)
-	@message XML
+    @from_service nvarchar(50),
+    @to_service nvarchar(50),
+    @message XML
 
 AS
 BEGIN
@@ -32,6 +32,8 @@ BEGIN
     END
  
     BEGIN TRY
+       DECLARE @target_queue_name nvarchar(100);
+ 
     END TRY
     BEGIN CATCH
  
