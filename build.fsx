@@ -30,7 +30,6 @@ Target "CreateDatabase" (fun _ ->
      )
 
 "BuildApp"
-==>"CreateDatabase"
 ==> "Default"
 
 // start build
