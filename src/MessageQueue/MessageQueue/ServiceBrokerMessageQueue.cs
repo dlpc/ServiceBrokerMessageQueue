@@ -6,13 +6,21 @@ namespace MessageQueue
 {
     internal class ServiceBrokerMessageQueue : MessageQueue, IDisposable
     {
-        private readonly SqlConnection _connection;
+        private readonly string _connectionString;
 
-        public ServiceBrokerMessageQueue(SqlConnection connection, string queueName)
+
+        public ServiceBrokerMessageQueue(string server, string database, string queueName)
         {
-            _connection = connection;
+            _connectionString = Common.DatabaseConnection.CreateConnectionString(server, database);
             QueueName = queueName;
         }
+
+        public ServiceBrokerMessageQueue(string connectionString, string queueName)
+        {
+            _connectionString = connectionString;
+            QueueName = queueName;
+        }
+
 
         public void Dispose()
         {
@@ -22,15 +30,14 @@ namespace MessageQueue
 
         public void Send(string message)
         {
-            try
+            using (var connection = new SqlConnection(_connectionString))
             {
-                _connection.Open();
+                connection.Open();
 
                 const string sendCommandTemplate = @"DECLARE @message XML;
         	    SET @message = N'{0}' ;
 
-	            DECLARE @conversationHandle UNIQUEIDENTIFIER ;
-
+	           
 	            BEGIN DIALOG CONVERSATION @conversationHandle
 		            FROM SERVICE {1}
 		            TO SERVICE '{2}'
@@ -42,42 +49,41 @@ namespace MessageQueue
                 MESSAGE TYPE {4}
                  (@message);";
 
-                string sendCommand = String.Format(sendCommandTemplate, message, 
+                string sendCommand = String.Format(sendCommandTemplate, message,
                     QueueNameConvention.GetInitiatorServiceName(QueueName),
                     QueueNameConvention.GetTargetServiceName(QueueName),
-                    QueueName + "_contract",QueueName + "_message");
+                    QueueName + "_contract", QueueName + "_message");
 
                 var cmd = new SqlCommand
                 {
-                    Connection = _connection,
+                    Connection = connection,
                     CommandText = sendCommand,
                     CommandType = CommandType.Text
                 };
 
-//                SqlParameter pCount = cmd.Parameters.Add("@initiatorService", SqlDbType.NVarChar);
-//                pCount.Value = QueueNameConvention.GetInitiatorServiceName(_queueName);
+                SqlParameter pCount = cmd.Parameters.Add("@conversationHandle", SqlDbType.UniqueIdentifier);
+                pCount.Value = Guid.NewGuid();
 
+//                cmd.Parameters.Add(pCount);
                 cmd.ExecuteNonQuery();
                 cmd.Dispose();
+                connection.Close();
             }
-            finally
-            {
-                
-                _connection.Close();
-               
-            }
+
         }
 
         public string Receive()
         {
-            try
+            using (var connection = new SqlConnection(_connectionString))
             {
-                _connection.Open();
+
+                connection.Open();
 
                 string sql = String.Format(@"waitfor(  
                 RECEIVE top (@count) conversation_handle,service_name,message_type_name, CAST(message_body AS XML) as msg,message_sequence_number  
-                FROM [{0}]), timeout @timeout","message_queue].[" + QueueNameConvention.GetTargetQueueName(QueueName) +"");
-                var cmd = new SqlCommand(sql, _connection);
+                FROM [{0}]), timeout @timeout",
+                    "message_queue].[" + QueueNameConvention.GetTargetQueueName(QueueName) + "");
+                var cmd = new SqlCommand(sql, connection);
 
                 SqlParameter pCount = cmd.Parameters.Add("@count", SqlDbType.Int);
                 pCount.Value = 1;
@@ -97,11 +103,10 @@ namespace MessageQueue
 
                 SqlDataReader result = cmd.ExecuteReader();
                 result.Read();
+                connection.Close();
                 return (string) result["msg"];
-            }
-            finally
-            {
-                _connection.Close();
+               
+
             }
         }
     }

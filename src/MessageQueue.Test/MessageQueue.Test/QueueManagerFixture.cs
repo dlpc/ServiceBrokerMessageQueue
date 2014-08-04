@@ -37,7 +37,7 @@ namespace MessageQueue.Test
             var qmgr = new QueueManager(Server,Database);
             qmgr.CreateQueue(QueueName);
 
-            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE"),Is.True);
+            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", Common.DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"SBMQ_Dev")),Is.True);
         }
 
         [Test]

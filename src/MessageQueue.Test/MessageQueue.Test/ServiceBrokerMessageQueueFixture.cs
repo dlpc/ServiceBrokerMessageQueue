@@ -10,12 +10,13 @@ namespace MessageQueue.Test
         private const string TestQueue = "test_queue";
 
         [Test]
+        [Ignore]
         public void WriteToQueue()
         {
             const string sentMessage = "<message>Message</message>";
             var qMgr = new QueueManager(@".\SQLI03",@"Test_SMO_Database");
           
-           // qMgr.CreateQueue(TestQueue);
+            qMgr.CreateQueue(TestQueue);
             var mq = qMgr.OpenQueue(TestQueue);
 
             using (var scope = new TransactionScope())

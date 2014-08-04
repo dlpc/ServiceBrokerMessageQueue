@@ -5,16 +5,15 @@ namespace Common
 {
     public class DatabaseVerification
     {
-        public static bool CheckSysObjectExists(string schemaName, string objectName, string type)
+        public static bool CheckSysObjectExists(string schemaName, string objectName, string type, SqlConnection connection)
         {
             const string commandText = @"
                 SELECT COUNT(*) FROM [sys].[objects] inner join sys.schemas 
                 on sys.objects.schema_id = sys.schemas.schema_id
                 where  [sys].[objects].[type_desc] = @object_type AND [sys].[schemas].[name] = @schema_name AND [sys].[objects].[name] =
                 @proc_name";
-            var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
-            sqlConnection.Open();
-            var cmd = new SqlCommand(commandText, sqlConnection);
+            connection.Open();
+            var cmd = new SqlCommand(commandText, connection);
 
             var objectNameParam = cmd.Parameters.Add("@proc_name", SqlDbType.VarChar);
             objectNameParam.Value = objectName;
@@ -29,7 +28,7 @@ namespace Common
             return (int)numberOfStoredProcs ==  1;
         }
 
-        public static bool CheckSysServicesExists(string serviceName)
+        public static bool CheckSysServicesExists(string serviceName, SqlConnection connection)
         {
             const string commandText = @"
                            SELECT COUNT(*)
@@ -37,9 +36,8 @@ namespace Common
                             WHERE name = @service_name
                             ;";
 
-            var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
-            sqlConnection.Open();
-            var cmd = new SqlCommand(commandText, sqlConnection);
+            connection.Open();
+            var cmd = new SqlCommand(commandText, connection);
 
             var serviceParamName = cmd.Parameters.Add("@service_name", SqlDbType.VarChar);
             serviceParamName.Value = serviceName;

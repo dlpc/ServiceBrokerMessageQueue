@@ -11,21 +11,32 @@ namespace MessageQueue
         {
             Server = server;
             Database = database;
+            _connectionString = string.Empty;
+        }
+
+        public QueueManager(string connectionString)
+        {
+            _connectionString = connectionString;
+
         }
 
         public string Server { get; private set; }
         public string Database { get; private set; }
+        private readonly string _connectionString; 
 
         public MessageQueue OpenQueue(string queueName)
         {
             CheckIfMessageQueueExists(queueName);
 
-            return new ServiceBrokerMessageQueue(DatabaseConnection.CreateSqlConnection(Server,Database),queueName);
+            if (string.IsNullOrEmpty(_connectionString))
+                return new ServiceBrokerMessageQueue(Server,Database,queueName);
+
+            return new ServiceBrokerMessageQueue(_connectionString,queueName);
         }
 
-        private static void CheckIfMessageQueueExists(string queueName)
+        private void CheckIfMessageQueueExists(string queueName)
         {
-            var doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE");
+            var doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE", Common.DatabaseConnection.CreateSqlConnection(_connectionString));
 
             if (doesQueueExist) return;
 
@@ -35,7 +46,7 @@ namespace MessageQueue
 
         public void CreateQueue(string queueName)
         {
-            var sqlConnection = DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"Test_SMO_Database");
+            var sqlConnection = Common.DatabaseConnection.CreateSqlConnection(_connectionString);
             sqlConnection.Open();
 
             var cmd = new SqlCommand("message_queue.create_queue", sqlConnection)
