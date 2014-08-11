@@ -24,7 +24,9 @@ Target "BuildApp" (fun _ ->
 |> Log "AppBuild-Output: "
 )
 
-
+Target "Clean" (fun _ ->
+CleanDirs ["./build/"]
+)
 
 Target "NUnitTest" (fun _ ->
     printfn "Test dll path %s" buildDir
@@ -38,8 +40,9 @@ Target "NUnitTest" (fun _ ->
   
 )
 
-"NUnitTest"
+"Clean"
 ==> "BuildApp"
+==> "NUnitTest"
 ==> "Default"
 
 // start build
