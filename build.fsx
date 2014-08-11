@@ -10,6 +10,7 @@ open System.Management.Automation
 
 // Properties
 let buildDir = "./build/"
+let testDlls = !! (buildDir + "*Test*.dll")
 
 // Default target
 Target "Default" (fun _ ->
@@ -24,12 +25,21 @@ Target "BuildApp" (fun _ ->
 )
 
 
-Target "CreateDatabase" (fun _ ->
-     PowerShell.Create().AddScript(".\utils\database\CreateAndSave.ps1").Invoke()
-     |> Seq.iter (printfn "%A")
-     )
 
-"BuildApp"
+Target "NUnitTest" (fun _ ->
+    printfn "Test dll path %s" buildDir
+    
+    testDlls
+        |> NUnit (fun p -> 
+            {p with
+                DisableShadowCopy = true; 
+                OutputFile = buildDir + "TestResults.xml"})
+    
+  
+)
+
+"NUnitTest"
+==> "BuildApp"
 ==> "Default"
 
 // start build

@@ -11,7 +11,7 @@ open System.Management.Automation
 // Properties
 let buildDir = "./build/"
 let SQLServer = @".\SQLI03"
-let SQLDatabase = @"SBMQ"
+let SQLDatabase = @"SBMQ_Dev"
 let ConnectionString = sprintf "Server=%s;Database=%s;Trusted_Connection=True;" SQLServer SQLDatabase 
  
 // Default target
@@ -37,11 +37,6 @@ Target "DropAndCreateDatabase" (fun _ ->
     Fake.SQL.SqlServer.DropAndCreateDatabase  ConnectionString
 )
 
-
-Target "CreateDatabase" (fun _ ->
-     PowerShell.Create().AddScript(".\utils\database\CreateAndSave.ps1").Invoke()
-     |> Seq.iter (printfn "%A")
-     )
 
 "DropAndCreateDatabase"
 ==> "CreateSchema"
