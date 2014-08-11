@@ -27,17 +27,17 @@ namespace MessageQueue.Test
     public class QueueManagerFixture : RollbackFixture
     {
         private const string Server = @".\SQLI03";
-        private const string Database = "Test_SMO_Database";
+        private const string Database = "SBMQ_Dev";
         private const string QueueName = "test_queue";
 
-
+            
         [Test]
         public void CreateQueue_CreatesNamedQueue()
         {
             var qmgr = new QueueManager(Server,Database);
             qmgr.CreateQueue(QueueName);
 
-            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", Common.DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"SBMQ_Dev")),Is.True);
+            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"SBMQ_Dev")),Is.True);
         }
 
         [Test]

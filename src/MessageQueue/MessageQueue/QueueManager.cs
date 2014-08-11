@@ -11,7 +11,7 @@ namespace MessageQueue
         {
             Server = server;
             Database = database;
-            _connectionString = string.Empty;
+            _connectionString = DatabaseConnection.CreateConnectionString(server, database);
         }
 
         public QueueManager(string connectionString)
@@ -46,7 +46,7 @@ namespace MessageQueue
 
         public void CreateQueue(string queueName)
         {
-            var sqlConnection = Common.DatabaseConnection.CreateSqlConnection(_connectionString);
+            var sqlConnection = DatabaseConnection.CreateSqlConnection(_connectionString);
             sqlConnection.Open();
 
             var cmd = new SqlCommand("message_queue.create_queue", sqlConnection)
