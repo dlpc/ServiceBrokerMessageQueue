@@ -1,28 +1,9 @@
-﻿using System.Transactions;
-using Common;
+﻿using Common;
 using MessageQueue.Exception;
 using NUnit.Framework;
 
 namespace MessageQueue.Test
 {
-    public class RollbackFixture
-    {
-        private TransactionScope _scope;
-
-        [SetUp]
-        public void Setup()
-        {
-            _scope = new TransactionScope(TransactionScopeOption.Required, new  TransactionOptions {IsolationLevel = IsolationLevel.ReadUncommitted} );
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            _scope.Dispose();
-            _scope = null;
-        }
-    }
-
     [TestFixture]
     public class QueueManagerFixture : RollbackFixture
     {
@@ -37,7 +18,27 @@ namespace MessageQueue.Test
             var qmgr = new QueueManager(Server,Database);
             qmgr.CreateQueue(QueueName);
 
-            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", DatabaseConnection.CreateSqlConnection(@".\SQLI03", @"SBMQ_Dev")),Is.True);
+            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
+                DatabaseConnection.CreateSqlConnection(Server, Database)),Is.True);
+        }
+
+        [Test]
+        [Ignore]
+        public void DeleteQueue_DeletesNamedQueue()
+        {
+            var qmgr = new QueueManager(Server, Database);
+            qmgr.CreateQueue(QueueName);
+
+            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
+                DatabaseConnection.CreateSqlConnection(Server, Database)), Is.True);
+ 
+
+
+            qmgr.DeleteQueue(QueueName);
+            Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
+                DatabaseConnection.CreateSqlConnection(Server, Database)), Is.True);
+ 
+
         }
 
         [Test]

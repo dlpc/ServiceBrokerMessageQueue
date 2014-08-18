@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RollbackFixture.cs" />
     <Compile Include="ServiceBrokerMessageQueueFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueManagerFixture.cs" />
