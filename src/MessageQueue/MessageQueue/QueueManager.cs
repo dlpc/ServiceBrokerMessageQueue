@@ -60,5 +60,20 @@ namespace MessageQueue
             cmd.ExecuteNonQuery();
         }
 
+        public void DeleteQueue(string queueName)
+        {
+            var sqlConnection = DatabaseConnection.CreateSqlConnection(_connectionString);
+            sqlConnection.Open();
+
+            var cmd = new SqlCommand("message_queue.delete_queue", sqlConnection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            var procNameParam = cmd.Parameters.Add("@queue_name", SqlDbType.NVarChar);
+            procNameParam.Value = queueName;
+
+            cmd.ExecuteNonQuery();
+        }
     }
 }

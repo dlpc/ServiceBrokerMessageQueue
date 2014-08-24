@@ -14,7 +14,7 @@ namespace MessageQueue.Test
         public void WriteToQueue()
         {
             const string sentMessage = "<message>Message</message>";
-            var qMgr = new QueueManager(@".\SQLI03","SBMQ_Dev");
+            var qMgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
           
             qMgr.CreateQueue(TestQueue);
             var mq = qMgr.OpenQueue(TestQueue);
