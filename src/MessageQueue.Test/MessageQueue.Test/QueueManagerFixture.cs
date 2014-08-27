@@ -21,22 +21,17 @@ namespace MessageQueue.Test
         }
 
         [Test]
-        [Ignore]
         public void DeleteQueue_DeletesNamedQueue()
         {
             var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
             qmgr.CreateQueue(QueueName);
-
             Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
                 DatabaseConnection.CreateSqlConnection(TestDatabaseSettings.Server, TestDatabaseSettings.Database)), Is.True);
  
-
 
             qmgr.DeleteQueue(QueueName);
             Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
-                DatabaseConnection.CreateSqlConnection(TestDatabaseSettings.Server, TestDatabaseSettings.Database)), Is.True);
- 
-
+                DatabaseConnection.CreateSqlConnection(TestDatabaseSettings.Server, TestDatabaseSettings.Database)), Is.False);
         }
 
         [Test]

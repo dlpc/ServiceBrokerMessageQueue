@@ -43,9 +43,17 @@ BEGIN
     DECLARE @SQLString nvarchar(500);
     DECLARE @ParmDefinition nvarchar(500);
 
-    --delete inititor_service, target_service,target queue,
 
+    --SERVICES--
     SET @target_service_name  = @queue_name + '_service'
+    
+    SET @contract_name  = @queue_name + '_contract'
+
+    SET @SQLString =
+    N'ALTER SERVICE ['+ @target_service_name + ']' + ' (DROP CONTRACT ' + @contract_name + ');'
+    EXECUTE sp_executesql @SQLString
+
+
     SET @SQLString =
      N'DROP SERVICE ['+ @target_service_name + ']';
     EXECUTE sp_executesql @SQLString
@@ -55,6 +63,17 @@ BEGIN
      N'DROP SERVICE ['+ @initiator_service_name + ']';
     EXECUTE sp_executesql @SQLString
 
+    --Alter service to drop the contract then drop the service
+    --DROP CONTRACT contract_name  
+
+
+   --CONTRACT--
+    SET @contract_name  = @queue_name + '_contract'
+    SET @SQLString = 'DROP CONTRACT ' + @contract_name
+    EXECUTE sp_executesql @SQLString
+
+
+    --QUEUES--
     SET @target_queue_name = @queue_name 
     SET @SQLString =
      N'DROP QUEUE [message_queue].['+ @target_queue_name + '];';
@@ -65,12 +84,10 @@ BEGIN
      N'DROP QUEUE [message_queue].['+ @initiator_queue_name + '];';
     EXECUTE sp_executesql @SQLString
 
-    SET @contract_name  = @queue_name + '_contract'
-    SET @SQLString = 'DROP CONTRACT ' + @contract_name + '(' + @message_type_name + ' SENT BY INITIATOR);'
-    EXECUTE sp_executesql @SQLString
-
+ 
+    --MESSAGE--
     SET @message_type_name  = @queue_name + '_message'
-    SET @SQLString = N'5DROP MESSAGE TYPE ' + @message_type_name
+    SET @SQLString = N'DROP MESSAGE TYPE ' + @message_type_name
     EXECUTE sp_executesql @SQLString
             
     IF @localTran = 1 AND XACT_STATE() = 1
