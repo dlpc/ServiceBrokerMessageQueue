@@ -36,7 +36,7 @@ namespace MessageQueue
 
         private void CheckIfMessageQueueExists(string queueName)
         {
-            var doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE", Common.DatabaseConnection.CreateSqlConnection(_connectionString));
+            var doesQueueExist = DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE", DatabaseConnection.CreateSqlConnection(_connectionString));
 
             if (doesQueueExist) return;
 

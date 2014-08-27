@@ -74,9 +74,9 @@ namespace MessageQueue
 
         public string Receive()
         {
+            string msg;
             using (var connection = new SqlConnection(_connectionString))
             {
-
                 connection.Open();
 
                 string sql = String.Format(@"waitfor(  
@@ -100,14 +100,14 @@ namespace MessageQueue
                 }
 
                 cmd.CommandTimeout = 0;
-
+                
                 SqlDataReader result = cmd.ExecuteReader();
                 result.Read();
+                msg = result["msg"].ToString();
                 connection.Close();
-                return (string) result["msg"];
-               
-
             }
+
+            return msg;
         }
     }
 }

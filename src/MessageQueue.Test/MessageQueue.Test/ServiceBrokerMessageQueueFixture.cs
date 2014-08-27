@@ -9,8 +9,17 @@ namespace MessageQueue.Test
     {
         private const string TestQueue = "test_queue";
 
+        [TearDown]
+        public void TearDown()
+        {
+            var qMgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+
+            qMgr.DeleteQueue(TestQueue);
+
+        }
+
+
         [Test]
-        [Ignore]
         public void WriteToQueue()
         {
             const string sentMessage = "<message>Message</message>";
@@ -29,7 +38,10 @@ namespace MessageQueue.Test
 
             var receivedMessage = mq.Receive();
 
+
+
             Assert.That(sentMessage.ToString(CultureInfo.CurrentCulture),Is.EqualTo(receivedMessage.ToString(CultureInfo.CurrentCulture)));
         }
+
     }
 }
