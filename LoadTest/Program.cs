@@ -21,21 +21,20 @@ namespace LoadTest
             //check message queue
             string messageQueueName = args[2];
 
-            const int value = 1;
+            const int value = 9;
 
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < value; i++)
             {
                 var thread = new Thread(() => WriteToMsmqAndDatabase(messageQueueName, value));
                 thread.Start();
             }
 
-
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < value; i++)
             {
                 var thread = new Thread(() => WriteToDatabase(messageQueueName, value));
                 thread.Start();
             }
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < value; i++)
             {
                 var thread = new Thread(() => WriteSbmqAndDatabase(messageQueueName, value));
                 thread.Start();
@@ -48,7 +47,7 @@ namespace LoadTest
             var sw = new Stopwatch();
             sw.Start();
 
-            const int numberOfExecutions = 1000;
+            const int numberOfExecutions = 10000;
             for (int i = 0; i < numberOfExecutions; i++)
             {
                 WriteToSbQueueAndDatabase(messageQueueName, value);
@@ -64,7 +63,7 @@ namespace LoadTest
             var sw = new Stopwatch();
             sw.Start();
 
-            const int numberOfExecutions = 1000;
+            const int numberOfExecutions = 10000;
             for (int i = 0; i < numberOfExecutions; i++)
             {
                 WriteToQueueAndDatabase(messageQueueName, value);
@@ -80,7 +79,7 @@ namespace LoadTest
             var sw = new Stopwatch();
             sw.Start();
 
-            const int numberOfExecutions = 1000;
+            const int numberOfExecutions = 10000;
             for (int i = 0; i < numberOfExecutions; i++)
             {
                 WriteToDatabase(value);
@@ -100,38 +99,8 @@ namespace LoadTest
                 var messageQueue = new System.Messaging.MessageQueue(msmq);
                 messageQueue.Send("sds", MessageQueueTransactionType.Automatic);
 
-                var connection = new SqlConnection(
-                    ConfigurationManager.ConnectionStrings["DB"].ToString());
-                connection.Open();
-                var cmd = new SqlCommand
-                {
-                    Connection = connection,
-                    CommandType = CommandType.Text,
-                    CommandText = @"Insert into test_table            ([key]
-                    ,[data])values (@key,@data)"
-                };
-
-                cmd.Parameters.AddWithValue("key", Guid.NewGuid().ToString());
-                cmd.Parameters.AddWithValue("data", value);
-
-                cmd.ExecuteNonQuery();
-                cmd.Dispose();
-                connection.Close();
-                scope.Complete();
-            }
-        }
-
-        private static void WriteToSbQueueAndDatabase(string messageQueueName, int value)
-        {
-            var qm = new QueueManager(@".\SQLI03", "Test_SMO_Database");
-            var q = qm.OpenQueue(messageQueueName);
-
-            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
-            {
-                q.Send("<message>Message</message>");
-
-                using (var connection = new SqlConnection(ConfigurationManager
-                    .ConnectionStrings["DB"].ToString()))
+                using (var connection = new SqlConnection(
+                    ConfigurationManager.ConnectionStrings["DB"].ToString()))
                 {
                     connection.Open();
                     var cmd = new SqlCommand
@@ -148,9 +117,42 @@ namespace LoadTest
                     cmd.ExecuteNonQuery();
                     cmd.Dispose();
                     connection.Close();
-                    connection.Dispose();
+                    scope.Complete();
                 }
+            }
+        }
+
+        private static void WriteToSbQueueAndDatabase(string messageQueueName, int value)
+        {
+            var qm = new QueueManager(ConfigurationManager
+                .ConnectionStrings["DB"].ToString());
+            MessageQueue.MessageQueue q = qm.OpenQueue(messageQueueName);
+
+            using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
+            {
+                using (var connection = new SqlConnection(ConfigurationManager
+                    .ConnectionStrings["DB"].ToString()))
+                {
+                    q.Send("<message>Message</message>");
+
+
+                    connection.Open();
+                    var cmd = new SqlCommand
+                    {
+                        Connection = connection,
+                        CommandType = CommandType.Text,
+                        CommandText = @"Insert into test_table            ([key]
+                    ,[data])values (@key,@data)"
+                    };
+
+                    cmd.Parameters.AddWithValue("key", Guid.NewGuid().ToString());
+                    cmd.Parameters.AddWithValue("data", value);
+
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                 
                 scope.Complete();
+                }
             }
         }
 
@@ -159,26 +161,28 @@ namespace LoadTest
         {
             using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
             {
-                var connection = new SqlConnection(
-                    ConfigurationManager.ConnectionStrings["DB"].ToString());
-                connection.Open();
-                var cmd = new SqlCommand
+                using (var connection = new SqlConnection(
+                    ConfigurationManager.ConnectionStrings["DB"].ToString()))
                 {
-                    Connection = connection,
-                    CommandType = CommandType.Text,
-                    CommandText = @"Insert into test_table            ([key]
+                    connection.Open();
+                    var cmd = new SqlCommand
+                    {
+                        Connection = connection,
+                        CommandType = CommandType.Text,
+                        CommandText = @"Insert into test_table            ([key]
                     ,[data])values (@key,@data)"
-                };
+                    };
 
-                cmd.Parameters.AddWithValue("key", Guid.NewGuid().ToString());
-                cmd.Parameters.AddWithValue("data", value);
+                    cmd.Parameters.AddWithValue("key", Guid.NewGuid().ToString());
+                    cmd.Parameters.AddWithValue("data", value);
 
-                cmd.ExecuteNonQuery();
-                cmd.Dispose();
-                cmd.Parameters["key"].Value = Guid.NewGuid().ToString();
-                cmd.ExecuteNonQuery();
-                connection.Close();
-                scope.Complete();
+                    cmd.ExecuteNonQuery();
+                    cmd.Dispose();
+                    cmd.Parameters["key"].Value = Guid.NewGuid().ToString();
+                    cmd.ExecuteNonQuery();
+                    connection.Close();
+                    scope.Complete();
+                }
             }
         }
     }
