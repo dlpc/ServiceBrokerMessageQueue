@@ -51,5 +51,25 @@ namespace MessageQueue.Test
             Assert.Throws<QueueNotFoundException>(() => qmgr.OpenQueue("non_existant_test_queue"));
         }
 
+        [Test]
+        public void DoesQueueExist_ReturnsFalseIfQueueDoesNotExist()
+        {
+            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+
+            var result = qmgr.QueueExists("non_existant_test_queue");
+
+            Assert.That(result, Is.False);
+        }
+
+        [Test]
+        public void DoesQueueExist_ReturnesTrueIfQueueDoesExist()
+        {
+            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            qmgr.CreateQueue(QueueName);
+            var result = qmgr.QueueExists(QueueName);
+
+            Assert.That(result, Is.True);
+        }
+
     }
 }

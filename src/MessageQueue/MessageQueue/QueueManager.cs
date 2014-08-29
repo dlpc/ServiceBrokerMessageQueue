@@ -75,5 +75,10 @@ namespace MessageQueue
 
             cmd.ExecuteNonQuery();
         }
+
+        public bool QueueExists(string queueName)
+        {
+            return DatabaseVerification.CheckSysObjectExists("message_queue", queueName, "SERVICE_QUEUE", DatabaseConnection.CreateSqlConnection(_connectionString));
+        }
     }
 }
