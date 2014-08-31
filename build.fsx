@@ -6,6 +6,7 @@
 
 open Fake
 open Fake.SQL
+open System
 open System.Management.Automation
 
 // Properties
@@ -28,6 +29,17 @@ Target "Clean" (fun _ ->
 CleanDirs ["./build/"]
 )
 
+Target "UnitTestPreReqs" (fun _ ->
+    trace "Running Unit Test Pre Reqs"
+
+    startService "Distributed Transaction Coordinator"
+
+
+    let timeout = DateTime.Now.AddSeconds(2.0).TimeOfDay;
+    ensureServiceHasStarted "Distributed Transaction Coordinator" timeout
+)
+
+
 Target "NUnitTest" (fun _ ->
     printfn "Test dll path %s" buildDir
     
@@ -42,6 +54,7 @@ Target "NUnitTest" (fun _ ->
 
 "Clean"
 ==> "BuildApp"
+==> "UnitTestPreReqs"
 ==> "NUnitTest"
 ==> "Default"
 
