@@ -8,12 +8,11 @@ namespace MessageQueue.Test
     public class QueueManagerFixture : RollbackFixture
     {
         public const string QueueName = "test_queue";
-
             
         [Test]
         public void CreateQueue_CreatesNamedQueue()
         {
-            var qmgr = new QueueManager(TestDatabaseSettings.Server,TestDatabaseSettings.Database);
+            var qmgr = GetQueueManager();
             qmgr.CreateQueue(QueueName);
 
             Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
@@ -23,12 +22,11 @@ namespace MessageQueue.Test
         [Test]
         public void DeleteQueue_DeletesNamedQueue()
         {
-            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            var qmgr = GetQueueManager();
             qmgr.CreateQueue(QueueName);
             Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
                 DatabaseConnection.CreateSqlConnection(TestDatabaseSettings.Server, TestDatabaseSettings.Database)), Is.True);
  
-
             qmgr.DeleteQueue(QueueName);
             Assert.That(DatabaseVerification.CheckSysObjectExists("message_queue", QueueName, "SERVICE_QUEUE", 
                 DatabaseConnection.CreateSqlConnection(TestDatabaseSettings.Server, TestDatabaseSettings.Database)), Is.False);
@@ -37,7 +35,7 @@ namespace MessageQueue.Test
         [Test]
         public void OpenQueue_OpensNamedMessageQueue()
         {
-            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            var qmgr = GetQueueManager();
             qmgr.CreateQueue(QueueName);
             var q = qmgr.OpenQueue(QueueName);
 
@@ -45,16 +43,16 @@ namespace MessageQueue.Test
         }
 
         [Test]
-        public void OpenQueue_ThrowsIfQueueDoesNotExist()
+        public void OpenQueue_Throws_IfQueueDoesNotExist()
         {
-            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            var qmgr = GetQueueManager();
             Assert.Throws<QueueNotFoundException>(() => qmgr.OpenQueue("non_existant_test_queue"));
         }
 
         [Test]
-        public void DoesQueueExist_ReturnsFalseIfQueueDoesNotExist()
+        public void DoesQueueExist_ReturnsFalse_IfQueueDoesNotExist()
         {
-            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            var qmgr = GetQueueManager();
 
             var result = qmgr.QueueExists("non_existant_test_queue");
 
@@ -62,14 +60,43 @@ namespace MessageQueue.Test
         }
 
         [Test]
-        public void DoesQueueExist_ReturnesTrueIfQueueDoesExist()
+        public void DoesQueueExist_ReturnesTrue_IfQueueDoesExist()
         {
-            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            var qmgr = GetQueueManager();
             qmgr.CreateQueue(QueueName);
             var result = qmgr.QueueExists(QueueName);
 
             Assert.That(result, Is.True);
         }
+
+        [Test]
+        public void GetQueues_ReturnsEmptyList_IfNoQueues()
+        {
+            var qmgr = GetQueueManager();
+
+            var queues =  qmgr.GetQueues();
+
+            Assert.That(queues.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void GetQueues_ReturnsOneQueue_IfQueueExists()
+        {
+            var qmgr = GetQueueManager();
+            qmgr.CreateQueue(QueueName);
+
+            var queues = qmgr.GetQueues();
+
+            Assert.That(queues.Count, Is.EqualTo(1));
+            Assert.That(queues[0].QueueName, Is.EqualTo(QueueName));
+        }
+
+        private static QueueManager GetQueueManager()
+        {
+            var qmgr = new QueueManager(TestDatabaseSettings.Server, TestDatabaseSettings.Database);
+            return qmgr;
+        }
+
 
     }
 }

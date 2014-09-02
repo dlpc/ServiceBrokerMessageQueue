@@ -29,7 +29,7 @@ BEGIN
  
     BEGIN TRY
 
-        SELECT sys.objects.name FROM [sys].[objects] inner join sys.schemas 
+        SELECT sys.objects.name as queue_name FROM [sys].[objects] inner join sys.schemas 
         on sys.objects.schema_id = sys.schemas.schema_id
         where  [sys].[objects].[type_desc] = 'SERVICE_QUEUE' AND [sys].[schemas].[name] = 'message_queue'
 
