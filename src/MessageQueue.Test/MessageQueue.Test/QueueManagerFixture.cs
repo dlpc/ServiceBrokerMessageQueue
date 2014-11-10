@@ -1,4 +1,5 @@
-﻿using Common;
+﻿using System.Linq;
+using Common;
 using MessageQueue.Exception;
 using NUnit.Framework;
 
@@ -90,6 +91,22 @@ namespace MessageQueue.Test
             Assert.That(queues.Count, Is.EqualTo(1));
             Assert.That(queues[0].QueueName, Is.EqualTo(QueueName));
         }
+
+        [Test]
+        public void GetQueues_ReturnsTwoQueues_IfTwoQueuesExists()
+        {
+            var qmgr = GetQueueManager();
+            qmgr.CreateQueue(QueueName);
+            const string alternateQueueName = QueueName + "_alternate";
+            qmgr.CreateQueue(alternateQueueName);
+
+            var queues = qmgr.GetQueues();
+
+            Assert.That(queues.Count, Is.EqualTo(2));
+            Assert.That(queues.First(x => x.QueueName == QueueName).QueueName, Is.EqualTo(QueueName));
+            Assert.That(queues.First(x => x.QueueName == alternateQueueName).QueueName, Is.EqualTo(alternateQueueName));
+        }
+
 
         private static QueueManager GetQueueManager()
         {
