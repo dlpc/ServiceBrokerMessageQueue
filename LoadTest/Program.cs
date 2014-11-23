@@ -126,15 +126,17 @@ namespace LoadTest
         {
             var qm = new QueueManager(ConfigurationManager
                 .ConnectionStrings["DB"].ToString());
-            MessageQueue.MessageQueue q = qm.OpenQueue(messageQueueName);
-
+         
             using (var scope = new TransactionScope(TransactionScopeOption.RequiresNew))
             {
                 using (var connection = new SqlConnection(ConfigurationManager
                     .ConnectionStrings["DB"].ToString()))
                 {
-                    q.Send("<message>Message</message>");
 
+                    using (var q = qm.OpenQueue(messageQueueName))
+                    {
+                        q.Send("<message>Message</message>");
+                    }
 
                     connection.Open();
                     var cmd = new SqlCommand

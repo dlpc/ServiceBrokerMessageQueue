@@ -2,6 +2,6 @@
 . '.\DatabaseUtils.ps1'
 
 $instance = ".\SQLI03"
-$database = "Test_SMO_Database"
+$database = "SBMQ_DB"
 
 Create-Database $instance $database
